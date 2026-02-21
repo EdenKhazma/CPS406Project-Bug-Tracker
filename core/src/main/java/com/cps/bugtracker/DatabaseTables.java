@@ -9,9 +9,10 @@ public class DatabaseTables {
 
     public void CreateTables()
     {
-        try (Connection conn = DriverManager.getConnection("jdbc:duckdb:analytics.db")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:duckdb:BugTracker.db")) {
             Statement stmt = conn.createStatement();
             stmt.execute("CALL start_ui()");
+            System.out.println("UI started. Press Enter to exit..."); //if I want to see the DB put a break point here
 
         } catch (SQLException e) {
             System.err.println("Database error: " + e.getMessage());
