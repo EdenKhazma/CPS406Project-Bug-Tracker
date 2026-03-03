@@ -9,26 +9,57 @@ import java.sql.*;
 
 public class DatabaseTables {
 
+    private Connection conn = null;
+
+    public void CreateConnection() {
+        try  {
+            conn = DriverManager.getConnection("jdbc:duckdb:BugTracker.db");
+            Statement stmt = conn.createStatement();
+//            stmt.execute("CALL start_ui()");
+//            System.out.println("UI started. Press Enter to exit...");
+//            int i = System.in.read();  // temporary pause so DB stays alive
+
+        }
+        catch (SQLException  e)
+        {
+            System.err.println("Database error: " + e.getMessage());
+        }
+    }
+
+    public void closeConnection() {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+                System.out.println("Database connection closed.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Failed to close connection: " + e.getMessage());
+        }
+    }
+
+
     public void CreateTables()
     {
-        try (Connection conn = DriverManager.getConnection("jdbc:duckdb:BugTracker.db")) {
+        try  {
+
             Statement stmt = conn.createStatement();
             stmt.execute("CALL start_ui()");
 //            System.out.println("UI started. Press Enter to exit..."); //if I want to see the DB put a break point here
 //            int i = System.in.read();  // temporary pause so DB stays alive
 
 
-            stmt.execute("CREATE SEQUENCE IF NOT EXISTS user_id_seq START 1 INCREMENT BY 1;" +
-                    "CREATE SEQUENCE IF NOT EXISTS Bug_id_seq START 1 INCREMENT BY 1;" +
+            stmt.execute("CREATE SEQUENCE IF NOT EXISTS user_id_seq START 1 INCREMENT BY 1;");
+            stmt.execute("CREATE SEQUENCE IF NOT EXISTS Bug_id_seq START 1 INCREMENT BY 1;");
+            stmt.execute("CREATE SEQUENCE IF NOT EXISTS Pbi_id_seq START 1 INCREMENT BY 1;");
 
-                    "CREATE TABLE IF NOT EXISTS users(" +
+             stmt.execute("CREATE TABLE IF NOT EXISTS users(" +
                     "USER_ID INTEGER PRIMARY KEY DEFAULT nextval('user_id_seq')," +
                     "USERNAME VARCHAR(10) NOT NULL," +
                     "FULL_NAME VARCHAR(40)," +
                     "EMAIL VARCHAR(40)); ");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS product_backlog_items (" +
-                    "id BIGINT PRIMARY KEY," +
+                    "id BIGINT PRIMARY KEY DEFAULT nextval('Pbi_id_seq')," +
                     "name VARCHAR(255) NOT NULL," +
                     "description TEXT);" );
 
@@ -54,18 +85,21 @@ public class DatabaseTables {
                     ");");
 
 
-            stmt.execute("CALL start_ui()");
-            System.out.println("UI started. Press Enter to exit...");
-            int i = System.in.read();  // temporary pause so DB stays alive
+            System.out.println("Tables created successfully!");
 
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException  e) {
             System.err.println("Database error: " + e.getMessage());
         }
-
-
-
-
-
+    }
+    public void waitAndClose() {
+        try {
+            System.out.println("Press Enter to close...");
+            int i = System.in.read();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        } finally {
+            closeConnection();
+        }
     }
 }
