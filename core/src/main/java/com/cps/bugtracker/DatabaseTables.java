@@ -19,15 +19,40 @@ public class DatabaseTables {
 
 
             stmt.execute("CREATE SEQUENCE IF NOT EXISTS user_id_seq START 1 INCREMENT BY 1;" +
-                    "CREATE SEQUENCE IF NOT EXISTS artificat_id_seq START 1 INCREMENT BY 1;" +
+                    "CREATE SEQUENCE IF NOT EXISTS Bug_id_seq START 1 INCREMENT BY 1;" +
 
                     "CREATE TABLE IF NOT EXISTS users(" +
-                    "USER_ID INTEGER PRIMARY KEY DEFAULT(nextval('user_id_seq'))," +
+                    "USER_ID INTEGER PRIMARY KEY DEFAULT nextval('user_id_seq')," +
                     "USERNAME VARCHAR(10) NOT NULL," +
                     "FULL_NAME VARCHAR(40)," +
-                    "EMAIL VARCHAR(40)); " +
+                    "EMAIL VARCHAR(40)); ");
 
-                    "");
+            stmt.execute("CREATE TABLE IF NOT EXISTS product_backlog_items (" +
+                    "id BIGINT PRIMARY KEY," +
+                    "name VARCHAR(255) NOT NULL," +
+                    "description TEXT);" );
+
+            stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS bugs (" +
+                    "    Bug_ID  INTEGER PRIMARY KEY DEFAULT nextval('Bug_id_seq') ," +
+                    "    title   VARCHAR(255) NOT NULL,        " +
+                    "    description  TEXT NOT NULL,          " +
+                    "    severity     VARCHAR(20) NOT NULL CHECK (" +
+                    "        severity IN ('CRITICAL','MAJOR','MINOR','TRIVIAL')),"+
+                    "    status       VARCHAR(20) NOT NULL DEFAULT 'NEW' CHECK (" +
+                    "        status IN ('NEW','PLANNED','IN_PROGRESS','RESOLVED','TESTED','CLOSED','REJECTED'))," +
+                    "    fast_track BOOLEAN NOT NULL DEFAULT FALSE,   " +
+                    "    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,   " +
+                    "    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,   " +
+                    "    resolved_at TIMESTAMP NULL,                                " +
+                    "    external_link TEXT NULL,            " +
+                    "    pbi_id BIGINT NULL REFERENCES product_backlog_items(id),                 " +
+                    "    phase VARCHAR(30) NULL CHECK (" +
+                    "        phase IN ('REQUIREMENTS','DESIGN'," +
+                    "                  'IMPLEMENTATION','TESTING','DEPLOYMENT')" +
+                    "    )                                   " +
+                    ");");
+
 
             stmt.execute("CALL start_ui()");
             System.out.println("UI started. Press Enter to exit...");
