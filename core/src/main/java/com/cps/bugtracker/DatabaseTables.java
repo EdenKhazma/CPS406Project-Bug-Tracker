@@ -11,6 +11,11 @@ public class DatabaseTables {
 
     private Connection conn = null;
 
+    public Connection getConnection() {
+        return conn;
+    }
+
+
     public void CreateConnection() {
         try  {
             conn = DriverManager.getConnection("jdbc:duckdb:BugTracker.db");
@@ -41,6 +46,7 @@ public class DatabaseTables {
     public void CreateTables()
     {
         try  {
+            CreateConnection();
 
             Statement stmt = conn.createStatement();
             stmt.execute("CALL start_ui()");
@@ -74,7 +80,7 @@ public class DatabaseTables {
                     "        status IN ('NEW','PLANNED','IN_PROGRESS','RESOLVED','TESTED','CLOSED','REJECTED'))," +
                     "    fast_track BOOLEAN NOT NULL DEFAULT FALSE,   " +
                     "    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,   " +
-                    "    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,   " +
+                    "    updated_at TIMESTAMP NULL,   " +
                     "    resolved_at TIMESTAMP NULL,                                " +
                     "    external_link TEXT NULL,            " +
                     "    pbi_id BIGINT NULL REFERENCES product_backlog_items(id),                 " +
