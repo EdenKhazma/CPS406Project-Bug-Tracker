@@ -28,3 +28,13 @@ public Long cretatePBI(String name, String des){
 
     }
 ```
+Note: if you want to dlete a table run this on the DuckDB UI:
+```sql
+DROP TABLE /enter table name
+```
+For example:
+```sql
+DROP TABLE proudect_baclog_items;
+```
+This will delete the table along with all the information stored in it.
+Then, remove *.db.wal file from your project directory. - For the db to run again need to remove previous version.
