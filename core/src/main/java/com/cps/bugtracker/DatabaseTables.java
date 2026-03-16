@@ -20,9 +20,6 @@ public class DatabaseTables {
         try  {
             conn = DriverManager.getConnection("jdbc:duckdb:BugTracker.db");
             Statement stmt = conn.createStatement();
-//            stmt.execute("CALL start_ui()");
-//            System.out.println("UI started. Press Enter to exit...");
-//            int i = System.in.read();  // temporary pause so DB stays alive
 
         }
         catch (SQLException  e)
@@ -79,9 +76,9 @@ public class DatabaseTables {
                     "    status       VARCHAR(20) NOT NULL DEFAULT 'NEW' CHECK (" +
                     "        status IN ('NEW','PLANNED','IN_PROGRESS','RESOLVED','TESTED','CLOSED','REJECTED'))," +
                     "    fast_track BOOLEAN NOT NULL DEFAULT FALSE,   " +
-                    "    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,   " +
-                    "    updated_at TIMESTAMP NULL,   " +
-                    "    resolved_at TIMESTAMP NULL,                                " +
+                    "    created_at DATE NOT NULL DEFAULT CURRENT_DATE,   " +
+                    "    updated_at DATE NULL,   " +
+                    "    resolved_at DATE NULL,                                " +
                     "    external_link TEXT NULL,            " +
                     "    pbi_id BIGINT NULL REFERENCES product_backlog_items(id),                 " +
                     "    phase VARCHAR(30) NULL CHECK (" +

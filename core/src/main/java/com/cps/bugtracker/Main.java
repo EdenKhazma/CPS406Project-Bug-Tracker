@@ -2,10 +2,7 @@ package com.cps.bugtracker;
 
 import java.sql.*;
 import java.util.Scanner;
-import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -23,64 +20,48 @@ public class Main {
 
         db.CreateConnection();
         db.CreateTables();
+        Connection conn = db.getConnection();
 
-        System.out.println("Enter Prodect Backlog item name\n");
-        namePB = scanner.nextLine();
-        System.out.println("Enter Prodect Backlog item description\n");
-        PB_description = scanner.nextLine();
+        namePB = "Pb_test";
+        PB_description = "ABC";
 
-        if(scrum.cretatePBI(namePB,PB_description) != null)
+        int pbiCreated = scrum.cretatePBI(conn, namePB,PB_description);
+
+        System.out.println(pbiCreated);
+
+        if(pbiCreated != 0)
         {
-            System.out.println("Entered Correctly\n");
+            System.out.println("Entered Correctly\n");//call the bug entering function
         }
         else{
-            System.out.println("Something went wrong\n");
+            System.out.println("Something went wrong\n");//tell user he entered something incorrectly...
         }
-        db.waitAndClose();
+//        db.waitAndClose();
+//        add a line to ask use to choose proudect back log (this is for updating)
 
+    if(pbiCreated != 0)
+    {
+        BugDetails bugDetails1 = new BugDetails("Test3", "CRITICAL",
+                "Testing creation of bug in scrum",true,"www.link.com","TESTING");
 
+        try {
+            int bugID = scrum.insertBug(conn,
+                    bugDetails1.getTitle(),
+                    bugDetails1.getBug_description(),
+                    bugDetails1.getBug_severity(),
+                    bugDetails1.isBug_fastrackF(),
+                    bugDetails1.getLink(),
+                    pbiCreated,
+                    bugDetails1.getPhase());
+            System.out.println(bugID);
+        } catch (SQLException e) {
+            throw new RuntimeException ("Failed to insert bug",e);
+        }
 
-
-//      Scanner scanner = new Scanner(System.in);
-//
-//      String namePB;
-//      String PB_description;
-//
-//     DatabaseTables db = new DatabaseTables();
-//     ScrumMethodClass scrum = new ScrumMethodClass();
-//
-//     db.CreateConnection();
-//     db.CreateTables();
-//
-//     System.out.println("Enter Prodect Backlog item name\n");
-//     namePB = scanner.next();
-//     System.out.println("Enter Prodect Backlog item description\n");
-//     PB_description = scanner.next();
-//
-//     scrum.cretatePBI(namePB,PB_description);
-
-//    if(PBid != 0)
-//    {
-//        System.out.println("Now can enter Scrum Bug details\n");
-//        System.out.println("Enter Bug title\n");
-//        String title = scanner.next();
-//        System.out.println("Enter description\n");
-//        String bug_description = scanner.next();
-//        System.out.println("Choose severity(For the UI but for now just write it)\n");
-//        String severity = scanner.next();
-//        System.out.println("Choose status(For the UI but for now just write it)\n");
-//        String status = scanner.next();
-//        System.out.println("Copy links to this text box\n");
-//        String link = scanner.next();
-//        System.out.println("choose phase(For the UI but for now just write it)\n");
-//        String phase = scanner.next();
-//
-//        scrum.insertBug();
-//
-//    }
-//    else{
-//        System.out.println("Something went wrong\n");
-//    }
-//    db.waitAndClose();
+    }
+    else{
+        System.out.println("Something went wrong\n");
+    }
+    db.waitAndClose();
    }
 }
