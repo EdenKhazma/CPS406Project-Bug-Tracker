@@ -1,14 +1,23 @@
 package com.cps.bugtracker;
 
-import java.util.Scanner;
-import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ScrumMethodClass extends BugTracker {
+
+    public ScrumMethodClass(String title, String description, String severity, String status, boolean fastTrack, LocalDate updatedAt, LocalDate resolvedAt, String externalLink, Long pbiId, String phase) {
+        super(title, description, severity, status, fastTrack, updatedAt, resolvedAt, externalLink, pbiId, phase);
+    }
+
+    public ScrumMethodClass() {
+        super();
+    }
+
 
     public int cretatePBI(Connection conn, String name, String des) {
         if ((!name.isEmpty()) && (name.length() <= 255) && (!des.isEmpty())) {
@@ -30,47 +39,26 @@ public class ScrumMethodClass extends BugTracker {
         return 0;
     }
 
-//in this function status will get Nes automatically and the created date as well.
-    public int insertBug(Connection conn,
-                         String title,
-                         String description,
-                         String severity,
-                         Boolean fastTrack,
-                         String externalLink,
-                         Integer pbiId,
-                         String phase) throws SQLException {
-        if (conn.isClosed()) {
-            int a = 0;
-        }
+    public List<ScrumMethodClass> getScrumBugs(Connection conn) {
+        List<ScrumMethodClass> bugs = new ArrayList<>();
+        String sql = "SELECT * FROM bugs WHERE pbi_id IS NOT NULL ORDER BY pbi_id ASC";
 
-        String sql = "INSERT INTO bugs (title, description, severity, fast_track, external_link, pbi_id, phase) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                "RETURNING Bug_ID";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, title);
-            stmt.setString(2, description);
-            stmt.setString(3, severity);
-            stmt.setBoolean(4, fastTrack != null ? fastTrack : false);
+            while (rs.next()) {
+                ScrumMethodClass scrum = new ScrumMethodClass();     // create a new Scrum object
 
-            // Nullable fields
-            if (externalLink != null) stmt.setString(5, externalLink);
-            else stmt.setNull(5, Types.VARCHAR);
-
-            if (pbiId != null) stmt.setInt(6, pbiId);
-            else stmt.setNull(6, Types.BIGINT);
-
-            if (phase != null) stmt.setString(7, phase);
-            else stmt.setNull(7, Types.VARCHAR);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("Bug_ID");
-                }
-
+                scrum.mapResultSetToBug(rs);   // fill it using inherited mapper
+                bugs.add(scrum);
             }
-            throw new SQLException("Insert failed, no ID returned.");
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching scrum bugs: " + e.getMessage());
         }
 
+        return bugs;
     }
+
+
 }

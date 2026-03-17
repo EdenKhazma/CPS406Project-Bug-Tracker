@@ -1,5 +1,5 @@
 package com.cps.bugtracker;
-
+//for testing scrum
 public class BugDetails {
 
 
@@ -14,16 +14,12 @@ public class BugDetails {
         this.bug_description = bug_description;
         this.bug_fastrackF = bug_fastrackF;
         this.link = link;
-        this.phase = phase;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public String getPhase() {
-        return phase;
-    }
 
     public String getLink() {
         return link;
@@ -46,5 +42,4 @@ public class BugDetails {
     String bug_severity;
     boolean bug_fastrackF;
     String link;
-    String phase;
 }
