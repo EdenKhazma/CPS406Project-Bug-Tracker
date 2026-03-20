@@ -10,8 +10,14 @@ import java.util.List;
 
 public class ScrumMethodClass extends BugTracker {
 
-    public ScrumMethodClass(String title, String description, String severity, String status, boolean fastTrack, LocalDate updatedAt, LocalDate resolvedAt, String externalLink, Long pbiId, String phase) {
+    String Pbi_name;
+    String Pbi_des;
+
+    public ScrumMethodClass(String Pbi_name,String Pbi_des,String title, String description, String severity, String status, boolean fastTrack, LocalDate updatedAt, LocalDate resolvedAt, String externalLink, Long pbiId, String phase) {
         super(title, description, severity, status, fastTrack, updatedAt, resolvedAt, externalLink, pbiId, phase);
+        this.Pbi_name  = Pbi_name;
+        this.Pbi_des = Pbi_des;
+
     }
 
     public ScrumMethodClass() {
@@ -19,7 +25,7 @@ public class ScrumMethodClass extends BugTracker {
     }
 
 
-    public int cretatePBI(Connection conn, String name, String des) {
+    public int createPBI(Connection conn, String name, String des) {
         if ((!name.isEmpty()) && (name.length() <= 255) && (!des.isEmpty())) {
             try (Statement stmt = conn.createStatement();) {
                 String sql = "INSERT INTO product_backlog_items(name, description)" +
@@ -39,6 +45,22 @@ public class ScrumMethodClass extends BugTracker {
         return 0;
     }
 
+    public void createScrumBug(Connection conn, String pbi_name, String pbi_des,
+                               String title,
+                               String description, String severity, boolean fastTrack, String externalLink) {
+        int pbi_id = createPBI(conn, pbi_name, pbi_des);
+        if (pbi_id != 0) {
+            try {
+                int bug_id = insertBug(conn, title, description, severity, fastTrack, externalLink, pbi_id, null);
+                System.out.println("Bug created with ID: " + bug_id);
+            } catch (SQLException e) {
+                System.err.println("Database error creating bug: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Something went wrong with creating PBI. Bug not created.");
+        }
+    }
+
     public List<ScrumMethodClass> getScrumBugs(Connection conn) {
         List<ScrumMethodClass> bugs = new ArrayList<>();
         String sql = "SELECT * FROM bugs WHERE pbi_id IS NOT NULL ORDER BY pbi_id ASC";
@@ -48,7 +70,6 @@ public class ScrumMethodClass extends BugTracker {
 
             while (rs.next()) {
                 ScrumMethodClass scrum = new ScrumMethodClass();     // create a new Scrum object
-
                 scrum.mapResultSetToBug(rs);   // fill it using inherited mapper
                 bugs.add(scrum);
             }
