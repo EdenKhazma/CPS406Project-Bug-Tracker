@@ -1,5 +1,6 @@
 package com.cps.bugtracker;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -12,13 +13,24 @@ public class TestSuite {
 
     private static DatabaseTables db;
     private static ScrumMethodClass scrum;
+    private static Waterfall waterfall;
 
     @BeforeAll
     static void setup() {
         db = new DatabaseTables();
-        db.CreateTables();   // ← THIS is what you're missing
+        db.CreateConnection();
+        db.CreateTables();
+
         scrum = new ScrumMethodClass();
+        waterfall = new Waterfall();
     }
+
+//    @AfterAll
+//    static void tearDown() {
+//        db.waitAndClose();
+//        db.closeConnection();
+//    }
+
     @Test
     void testCreatePBI_returnsValidId() {
         int pbiId = scrum.createPBI(db.getConnection(), "Test PBI", "Test PBI description");
@@ -80,4 +92,71 @@ public class TestSuite {
 //        db.waitAndClose();
        db.closeConnection();
     }
+
+    @Test
+    void testCreateWaterfallBug() {
+        int initialSize = waterfall.showWaterfallBugs(db.getConnection()).size();
+        waterfall.createWaterfallBug(db.getConnection(), "REQUIREMENTS", "Test Waterfall Bug", "Test Description", "MAJOR", "NEW", false, "http://example.com");
+        int finalSize = waterfall.showWaterfallBugs(db.getConnection()).size();
+        assertEquals(initialSize + 1, finalSize);
+    }
+
+    @Test
+    void testUpdateWaterfallBug() {
+        // Get existing bugs
+        List<Waterfall> bugs = waterfall.showWaterfallBugs(db.getConnection());
+        Waterfall bugToUpdate;
+
+        if (bugs.isEmpty()) {
+            // Create a bug if none exist
+            waterfall.createWaterfallBug(db.getConnection(), "DESIGN", "Update Test Bug", "Initial Description", "MINOR", "NEW", false, null);
+            bugs = waterfall.showWaterfallBugs(db.getConnection());
+        }
+
+        bugToUpdate = bugs.get(bugs.size() - 1);
+
+        // Update the bug
+        boolean updated = waterfall.updateWaterfallBug(db.getConnection(), bugToUpdate.getBugId(), "IMPLEMENTATION", "Updated Title", "Updated Description", "MAJOR", "IN_PROGRESS", true, "http://updated.com");
+        assertTrue(updated);
+
+        // Verify the update
+        bugs = waterfall.showWaterfallBugs(db.getConnection());
+        Waterfall updatedBug = bugs.stream().filter(b -> b.getBugId() == bugToUpdate.getBugId()).findFirst().orElse(null);
+        assertNotNull(updatedBug);
+        assertEquals("Updated Title", updatedBug.getTitle());
+        assertEquals("Updated Description", updatedBug.getDescription());
+        assertEquals("IMPLEMENTATION", updatedBug.getPhase());
+        assertEquals("MAJOR", updatedBug.getSeverity());
+        assertEquals("IN_PROGRESS", updatedBug.getStatus());
+        assertTrue(updatedBug.isFastTrack());
+        assertEquals("http://updated.com", updatedBug.getExternalLink());
+    }
+
+    @Test
+    void testShowWaterfallBugs() {
+        List<Waterfall> bugs = waterfall.showWaterfallBugs(db.getConnection());
+        assertNotNull(bugs);
+
+        System.out.println("Total Waterfall Bugs: " + bugs.size());
+        System.out.println("─────────────────────────────────────────");
+
+        for (Waterfall bug : bugs) {
+            System.out.println("Bug ID    : " + bug.getBugId());
+            System.out.println("Title     : " + bug.getTitle());
+            System.out.println("Description: " + bug.getDescription());
+            System.out.println("Severity  : " + bug.getSeverity());
+            System.out.println("Status    : " + bug.getStatus());
+            System.out.println("Phase     : " + bug.getPhase());
+            System.out.println("Fast Track: " + bug.isFastTrack());
+            System.out.println("External Link: " + bug.getExternalLink());
+            System.out.println("Created   : " + bug.getCreatedAt());
+            System.out.println("Updated   : " + bug.getUpdatedAt());
+            System.out.println("Resolved  : " + bug.getResolvedAt());
+            System.out.println("─────────────────────────────────────────");
+
+            assertNotNull(bug.getPhase());
+            assertNull(bug.getPbiId()); // Waterfall bugs should not have PBI ID
+        }
+    }
+
 }
