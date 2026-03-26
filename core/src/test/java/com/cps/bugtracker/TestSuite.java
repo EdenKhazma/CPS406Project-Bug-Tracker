@@ -16,8 +16,7 @@ public class TestSuite {
     @BeforeAll
     static void setup() {
         db = new DatabaseTables();
-        db.CreateConnection();
-
+        db.CreateTables();   // ← THIS is what you're missing
         scrum = new ScrumMethodClass();
     }
     @Test
