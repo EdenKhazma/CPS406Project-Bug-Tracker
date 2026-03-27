@@ -60,6 +60,7 @@ public class ScrumMethodClass extends BugTracker {
             System.out.println("Something went wrong with creating PBI. Bug not created.");
         }
     }
+    
 
     public List<ScrumMethodClass> getScrumBugs(Connection conn) {
         List<ScrumMethodClass> bugs = new ArrayList<>();
@@ -81,5 +82,75 @@ public class ScrumMethodClass extends BugTracker {
         return bugs;
     }
 
+    public boolean updateScrumBug(Connection conn, int bugId, Long pbiId, String title, 
+                                   String description, String severity, String status, Boolean fastTrack) {
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE bugs SET updated_at = CURRENT_DATE");
+        int paramIndex = 1;
+
+        // Build dynamic SQL based on non-null parameters
+        if (title != null) {
+            sqlBuilder.append(", title = ?");
+        }
+        if (description != null) {
+            sqlBuilder.append(", description = ?");
+        }
+        if (severity != null) {
+            sqlBuilder.append(", severity = ?");
+        }
+        if (status != null) {
+            sqlBuilder.append(", status = ?");
+        }
+        if (fastTrack != null) {
+            sqlBuilder.append(", fast_track = ?");
+        }
+
+        sqlBuilder.append(" WHERE Bug_ID = ? AND pbi_id = ?");
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+            // Set the non-null parameters in order
+            if (title != null) {
+                pstmt.setString(paramIndex++, title);
+            }
+            if (description != null) {
+                pstmt.setString(paramIndex++, description);
+            }
+            if (severity != null) {
+                pstmt.setString(paramIndex++, severity);
+            }
+            if (status != null) {
+                pstmt.setString(paramIndex++, status);
+            }
+            if (fastTrack != null) {
+                pstmt.setBoolean(paramIndex++, fastTrack);
+            }
+
+            // Set the WHERE clause parameters
+            pstmt.setInt(paramIndex++, bugId);
+            pstmt.setLong(paramIndex, pbiId);
+
+            int rowsUpdated = pstmt.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                // Set resolved_at if status is a resolved state
+                if (status != null && ("RESOLVED".equalsIgnoreCase(status) ||
+                    "CLOSED".equalsIgnoreCase(status) ||
+                    "REJECTED".equalsIgnoreCase(status))) {
+
+                    String resolvedSql = "UPDATE bugs SET resolved_at = CURRENT_DATE WHERE Bug_ID = ?";
+                    try (PreparedStatement resolvedStmt = conn.prepareStatement(resolvedSql)) {
+                        resolvedStmt.setInt(1, bugId);
+                        resolvedStmt.executeUpdate();
+                    }
+                }
+                System.out.println("Scrum bug " + bugId + " updated successfully");
+                return true;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error updating Scrum bug: " + e.getMessage());
+        }
+
+        return false;
+    }
 
 }
