@@ -65,13 +65,71 @@ public class TestSuite {
     }
     
     @Test
+    void testUpdateScrumBug() {
+        // Get existing scrum bugs
+        List<ScrumMethodClass> bugs = scrum.getScrumBugs(db.getConnection());
+        ScrumMethodClass bugToUpdate;
+
+        if (bugs.isEmpty()) {
+            // Create a bug if none exist
+            scrum.createScrumBug(db.getConnection(), "Update Test PBI", "PBI for update testing", "Update Test Bug", "Initial Description", "MINOR", false, null);
+            bugs = scrum.getScrumBugs(db.getConnection());
+        }
+
+        bugToUpdate = bugs.get(bugs.size() - 1);
+        Long pbiId = bugToUpdate.getPbiId();
+
+        // Update the bug with new values
+        boolean updated = scrum.updateScrumBug(db.getConnection(), bugToUpdate.getBugId(), pbiId, 
+                                                "Updated Title", "Updated Description", "MAJOR", "IN_PROGRESS", true);
+        assertTrue(updated);
+
+        // Verify the update
+        bugs = scrum.getScrumBugs(db.getConnection());
+        ScrumMethodClass updatedBug = bugs.stream().filter(b -> b.getBugId() == bugToUpdate.getBugId()).findFirst().orElse(null);
+        assertNotNull(updatedBug);
+        assertEquals("Updated Title", updatedBug.getTitle());
+        assertEquals("Updated Description", updatedBug.getDescription());
+        assertEquals("MAJOR", updatedBug.getSeverity());
+        assertEquals("IN_PROGRESS", updatedBug.getStatus());
+        assertTrue(updatedBug.isFastTrack());
+        assertNotNull(updatedBug.getUpdatedAt());
+    }
+
+    @Test
+    void testUpdateScrumBug_PartialUpdate() {
+        // Get existing scrum bugs
+        List<ScrumMethodClass> bugs = scrum.getScrumBugs(db.getConnection());
+        ScrumMethodClass bugToUpdate;
+
+        if (bugs.isEmpty()) {
+            // Create a bug if none exist
+            scrum.createScrumBug(db.getConnection(), "Partial Update PBI", "PBI for partial update testing", "Partial Update Bug", "Initial Description", "CRITICAL", true, null);
+            bugs = scrum.getScrumBugs(db.getConnection());
+        }
+
+        bugToUpdate = bugs.get(bugs.size() - 1);
+        Long pbiId = bugToUpdate.getPbiId();
+        String originalTitle = bugToUpdate.getTitle();
+        String originalDescription = bugToUpdate.getDescription();
+
+        // Update only status, leaving other fields as null (unchanged)
+        boolean updated = scrum.updateScrumBug(db.getConnection(), bugToUpdate.getBugId(), pbiId, 
+                                                null, null, null, "RESOLVED", null);
+        assertTrue(updated);
+
+        // Verify the update - status changed, others remain the same
+        bugs = scrum.getScrumBugs(db.getConnection());
+        ScrumMethodClass updatedBug = bugs.stream().filter(b -> b.getBugId() == bugToUpdate.getBugId()).findFirst().orElse(null);
+        assertNotNull(updatedBug);
+        assertEquals("RESOLVED", updatedBug.getStatus());
+        assertEquals(originalTitle, updatedBug.getTitle()); // Title should remain unchanged
+        assertEquals(originalDescription, updatedBug.getDescription()); // Description should remain unchanged
+        assertNotNull(updatedBug.getResolvedAt()); // resolved_at should be set when status is RESOLVED
+    }
+
+    @Test
     void testScrumBugs() {
-        // connect to database and create tables
-
-        DatabaseTables db = new DatabaseTables();
-        db.CreateConnection();
-
-        ScrumMethodClass scrum = new ScrumMethodClass();
         Connection conn = db.getConnection();
         List<ScrumMethodClass> scrumBugs = scrum.getScrumBugs(conn);
 
@@ -87,10 +145,10 @@ public class TestSuite {
             System.out.println("Phase     : " + bug.getPhase());
             System.out.println("Fast Track: " + bug.isFastTrack());
             System.out.println("Created   : " + bug.getCreatedAt());
+            System.out.println("Updated   : " + bug.getUpdatedAt());
+            System.out.println("Resolved  : " + bug.getResolvedAt());
             System.out.println("─────────────────────────────────────────");
         }
-//        db.waitAndClose();
-       db.closeConnection();
     }
 
     @Test
