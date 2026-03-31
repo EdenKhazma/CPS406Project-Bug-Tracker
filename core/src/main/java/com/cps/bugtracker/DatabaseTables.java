@@ -17,14 +17,22 @@ public class DatabaseTables {
 
 
     public void CreateConnection() {
-        try  {
-            conn = DriverManager.getConnection("jdbc:duckdb:BugTracker.db");
-            Statement stmt = conn.createStatement();
+        try {
+            // prevent reopening connection
+            if (conn != null && !conn.isClosed()) {
+                return;
+            }
 
-        }
-        catch (SQLException  e)
-        {
-            System.err.println("Database error: " + e.getMessage());
+            conn = DriverManager.getConnection("jdbc:duckdb:BugTracker.db");
+
+        } catch (SQLException e) {
+            conn = null; // IMPORTANT
+
+            if (e.getMessage().contains("lock")) {
+                System.err.println("⚠️ Database is already in use. Please close other instances and try again.");
+            } else {
+                System.err.println("Database error: " + e.getMessage());
+            }
         }
     }
 
