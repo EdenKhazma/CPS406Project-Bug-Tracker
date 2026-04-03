@@ -191,6 +191,39 @@ public class TestSuite {
     }
 
     @Test
+    void testUpdateWaterfallBug_PartialUpdate() {
+        // Get existing bugs
+        List<Waterfall> bugs = waterfall.showWaterfallBugs(db.getConnection());
+        Waterfall bugToUpdate;
+
+        if (bugs.isEmpty()) {
+            // Create a bug if none exist
+            waterfall.createWaterfallBug(db.getConnection(), "DESIGN", "Partial Update Bug", "Initial Description", "CRITICAL", "NEW", true, null);
+            bugs = waterfall.showWaterfallBugs(db.getConnection());
+        }
+
+        bugToUpdate = bugs.get(bugs.size() - 1);
+        String originalTitle = bugToUpdate.getTitle();
+        String originalDescription = bugToUpdate.getDescription();
+        String originalPhase = bugToUpdate.getPhase();
+
+        // Update only status, leaving other fields as null (unchanged)
+        boolean updated = waterfall.updateWaterfallBug(db.getConnection(), bugToUpdate.getBugId(), 
+                                                        null, null, null, null, "RESOLVED", null, null);
+        assertTrue(updated);
+
+        // Verify the update - status changed, others remain the same
+        bugs = waterfall.showWaterfallBugs(db.getConnection());
+        Waterfall updatedBug = bugs.stream().filter(b -> b.getBugId() == bugToUpdate.getBugId()).findFirst().orElse(null);
+        assertNotNull(updatedBug);
+        assertEquals("RESOLVED", updatedBug.getStatus());
+        assertEquals(originalTitle, updatedBug.getTitle()); // Title should remain unchanged
+        assertEquals(originalDescription, updatedBug.getDescription()); // Description should remain unchanged
+        assertEquals(originalPhase, updatedBug.getPhase()); // Phase should remain unchanged
+        assertNotNull(updatedBug.getResolvedAt()); // resolved_at should be set when status is RESOLVED
+    }
+
+    @Test
     void testShowWaterfallBugs() {
         List<Waterfall> bugs = waterfall.showWaterfallBugs(db.getConnection());
         assertNotNull(bugs);

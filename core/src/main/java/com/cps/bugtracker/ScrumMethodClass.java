@@ -24,6 +24,9 @@ public class ScrumMethodClass extends BugTracker {
         super();
     }
 
+    public String getPbiName() {
+        return Pbi_name;
+    }
 
     public int createPBI(Connection conn, String name, String des) {
         if ((!name.isEmpty()) && (name.length() <= 255) && (!des.isEmpty())) {
@@ -60,18 +63,23 @@ public class ScrumMethodClass extends BugTracker {
             System.out.println("Something went wrong with creating PBI. Bug not created.");
         }
     }
-    
+
 
     public List<ScrumMethodClass> getScrumBugs(Connection conn) {
         List<ScrumMethodClass> bugs = new ArrayList<>();
-        String sql = "SELECT * FROM bugs WHERE pbi_id IS NOT NULL ORDER BY pbi_id ASC";
+        String sql = "SELECT b.*, p.name AS pbi_name " +
+                "FROM bugs b " +
+                "JOIN product_backlog_items p ON b.pbi_id = p.id " +
+                "WHERE b.pbi_id IS NOT NULL " +
+                "ORDER BY b.pbi_id ASC";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
-                ScrumMethodClass scrum = new ScrumMethodClass();     // create a new Scrum object
-                scrum.mapResultSetToBug(rs);   // fill it using inherited mapper
+                ScrumMethodClass scrum = new ScrumMethodClass();
+                scrum.mapResultSetToBug(rs);
+                scrum.Pbi_name = rs.getString("pbi_name");  // capture the joined name
                 bugs.add(scrum);
             }
 
@@ -80,6 +88,44 @@ public class ScrumMethodClass extends BugTracker {
         }
 
         return bugs;
+    }
+
+//    public List<ScrumMethodClass> getScrumBugs(Connection conn) {
+//        List<ScrumMethodClass> bugs = new ArrayList<>();
+//        String sql = "SELECT * FROM bugs WHERE pbi_id IS NOT NULL ORDER BY pbi_id ASC";
+//
+//        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+//             ResultSet rs = pstmt.executeQuery()) {
+//
+//            while (rs.next()) {
+//                ScrumMethodClass scrum = new ScrumMethodClass();     // create a new Scrum object
+//                scrum.mapResultSetToBug(rs);   // fill it using inherited mapper
+//                bugs.add(scrum);
+//            }
+//
+//        } catch (SQLException e) {
+//            System.err.println("Error fetching scrum bugs: " + e.getMessage());
+//        }
+//
+//        return bugs;
+//    }
+
+    public List<String> getAllPbiNames(Connection conn) {
+        List<String> pbiNames = new ArrayList<>();
+        String sql = "SELECT name FROM product_backlog_items ORDER BY id ASC";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                pbiNames.add(rs.getString("name"));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching PBI names: " + e.getMessage());
+        }
+
+        return pbiNames;
     }
 
     public boolean updateScrumBug(Connection conn, int bugId, Long pbiId, String title, 

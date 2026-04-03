@@ -54,7 +54,7 @@ public class DatabaseTables {
             CreateConnection();
 
             Statement stmt = conn.createStatement();
- //           stmt.execute("CALL start_ui()");
+            stmt.execute("CALL start_ui()");
 //            System.out.println("UI started. Press Enter to exit..."); //if I want to see the DB put a break point here
 //            int i = System.in.read();  // temporary pause so DB stays alive
 
