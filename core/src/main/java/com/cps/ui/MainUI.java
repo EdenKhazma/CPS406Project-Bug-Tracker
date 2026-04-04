@@ -42,7 +42,7 @@ public class MainUI extends JFrame {
         add(top,BorderLayout.NORTH);
 
         model = new DefaultTableModel(new String[]{
-                "ID","PBI Title","Phase","Bug Title","Severity","Status","Created","Updated","Fast Track","Resolved"
+                "ID","PBI Title","Phase","Bug Title","Description","Severity","Status","Created","Updated","Fast Track","Resolved"
         },0){
             public boolean isCellEditable(int r,int c){return false;}
         };
@@ -51,21 +51,49 @@ public class MainUI extends JFrame {
         table.setRowHeight(25);
 
         // 🎨 Severity coloring
-        table.setDefaultRenderer(Object.class,new DefaultTableCellRenderer(){
-            public Component getTableCellRendererComponent(JTable t,Object val,boolean sel,boolean f,int r,int c){
-                Component comp = super.getTableCellRendererComponent(t,val,sel,f,r,c);
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean f, int r, int c) {
 
-                if(!sel){
-                    String sev = t.getValueAt(r,4).toString();
-
-                    if(sev.equals("CRITICAL")) comp.setBackground(new Color(255,180,180));
-                    else if(sev.equals("MAJOR")) comp.setBackground(new Color(255,220,180));
-                    else if(sev.equals("MINOR")) comp.setBackground(new Color(255,255,180));
-                    else comp.setBackground(new Color(200,255,200));
-                } else {
-                    comp.setBackground(new Color(180,200,255));
+                // Find column indexes by name
+                int sevCol = -1, ftCol = -1;
+                for (int i = 0; i < t.getColumnCount(); i++) {
+                    if (t.getColumnName(i).equals("Severity"))   sevCol = i;
+                    if (t.getColumnName(i).equals("Fast Track")) ftCol  = i;
                 }
 
+                // For Fast Track column — return a checkbox instead of text
+                if (c == ftCol) {
+                    JCheckBox cb = new JCheckBox();
+                    cb.setSelected(Boolean.TRUE.equals(val));
+                    cb.setHorizontalAlignment(SwingConstants.CENTER);
+                    cb.setOpaque(true);
+
+                    // Apply same severity background to keep row color consistent
+                    if (!sel) {
+                        String sev = sevCol >= 0 ? t.getValueAt(r, sevCol).toString() : "";
+                        if      (sev.equals("CRITICAL")) cb.setBackground(new Color(255, 180, 180));
+                        else if (sev.equals("MAJOR"))    cb.setBackground(new Color(255, 220, 180));
+                        else if (sev.equals("MINOR"))    cb.setBackground(new Color(255, 255, 180));
+                        else if (sev.equals("TRIVIAL"))  cb.setBackground(new Color(200, 255, 200));
+                        else                             cb.setBackground(Color.WHITE);
+                    } else {
+                        cb.setBackground(new Color(180, 200, 255));
+                    }
+                    return cb;
+                }
+
+                // All other columns — normal text with severity coloring
+                Component comp = super.getTableCellRendererComponent(t, val, sel, f, r, c);
+                if (!sel) {
+                    String sev = sevCol >= 0 ? t.getValueAt(r, sevCol).toString() : "";
+                    if      (sev.equals("CRITICAL")) comp.setBackground(new Color(255, 180, 180));
+                    else if (sev.equals("MAJOR"))    comp.setBackground(new Color(255, 220, 180));
+                    else if (sev.equals("MINOR"))    comp.setBackground(new Color(255, 255, 180));
+                    else if (sev.equals("TRIVIAL"))  comp.setBackground(new Color(200, 255, 200));
+                    else                             comp.setBackground(Color.WHITE);
+                } else {
+                    comp.setBackground(new Color(180, 200, 255));
+                }
                 return comp;
             }
         });
@@ -246,10 +274,13 @@ public class MainUI extends JFrame {
         final Long[] pbiId = {null};
         final String[] existingPhase = {null};
         String existingDesc = "";
-        String existingTitle = model.getValueAt(row,1).toString();
-        String existingSeverity = model.getValueAt(row,2).toString();
-        String existingStatus = model.getValueAt(row,3).toString();
-        boolean existingFastTrack = Boolean.parseBoolean(model.getValueAt(row,4).toString());
+       // String existingTitle = model.getValueAt(row,1).toString();
+       // String existingSeverity = model.getValueAt(row,2).toString();
+        String existingTitle      = model.getValueAt(row, 3).toString(); // Bug Title
+        String existingSeverity   = model.getValueAt(row, 5).toString(); // Severity  ← was 4
+        String existingStatus     = model.getValueAt(row, 6).toString(); // Status    ← was 5
+        boolean existingFastTrack = Boolean.parseBoolean(model.getValueAt(row, 9).toString()); // ← was 8
+        //boolean existingFastTrack = Boolean.parseBoolean(model.getValueAt(row,4).toString());
 
         try{
             // Check if it's a Scrum bug
@@ -369,11 +400,18 @@ public class MainUI extends JFrame {
 
         model.setRowCount(0);
 
+        // Update column headers to include Description
+        model.setColumnIdentifiers(new String[]{
+                "ID","PBI Title","Phase","Bug Title","Description","Severity","Status","Created","Updated","Fast Track","Resolved"
+        });
+
         List<ScrumMethodClass> scrumBugs = scrum.getScrumBugs(db.getConnection());
         List<Waterfall> waterfallBugs = waterfall.showWaterfallBugs(db.getConnection());
 
-        for(ScrumMethodClass b:scrumBugs){
-            // Get PBI name from database
+        // Combine all rows into one list so we can sort fast track first
+        java.util.List<Object[]> allRows = new java.util.ArrayList<>();
+
+        for(ScrumMethodClass b : scrumBugs){
             String pbiName = "N/A";
             try {
                 if (b.getPbiId() != null) {
@@ -382,19 +420,16 @@ public class MainUI extends JFrame {
                     java.sql.PreparedStatement pstmt = conn.prepareStatement(sql);
                     pstmt.setLong(1, b.getPbiId());
                     java.sql.ResultSet rs = pstmt.executeQuery();
-                    if (rs.next()) {
-                        pbiName = rs.getString("name");
-                    }
+                    if (rs.next()) pbiName = rs.getString("name");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { e.printStackTrace(); }
 
-            model.addRow(new Object[]{
+            allRows.add(new Object[]{
                     b.getBugId(),
-                    pbiName,  // PBI Title
-                    "",  // Phase is empty for Scrum
-                    b.getTitle(),  // Bug Title
+                    pbiName,
+                    "",                   // no phase for Scrum
+                    b.getTitle(),
+                    b.getDescription(),   // ← Description
                     b.getSeverity(),
                     b.getStatus(),
                     b.getCreatedAt(),
@@ -404,12 +439,13 @@ public class MainUI extends JFrame {
             });
         }
 
-        for(Waterfall b:waterfallBugs){
-            model.addRow(new Object[]{
+        for(Waterfall b : waterfallBugs){
+            allRows.add(new Object[]{
                     b.getBugId(),
-                    "N/A",  // No PBI for Waterfall
-                    b.getPhase(),  // Phase for Waterfall
-                    b.getTitle(),  // Bug Title
+                    "N/A",
+                    b.getPhase(),
+                    b.getTitle(),
+                    b.getDescription(),   // ← Description
                     b.getSeverity(),
                     b.getStatus(),
                     b.getCreatedAt(),
@@ -417,8 +453,16 @@ public class MainUI extends JFrame {
                     b.isFastTrack(),
                     b.getResolvedAt()
             });
+        }
+
+        // Sort: fast track true rows come first
+        allRows.sort((a, b) -> Boolean.compare((Boolean) b[9], (Boolean) a[9]));
+
+        for(Object[] row : allRows){
+            model.addRow(row);
         }
     }
+
 
     // ================= ADD BUG TO EXISTING PBI =================
     private void openAddBugToPBI() {
@@ -520,60 +564,6 @@ public class MainUI extends JFrame {
         });
         d.setVisible(true);
     }
-//    private void refresh(){
-//
-//        model.setRowCount(0);
-//
-//        List<ScrumMethodClass> scrumBugs = scrum.getScrumBugs(db.getConnection());
-//        List<Waterfall> waterfallBugs = waterfall.showWaterfallBugs(db.getConnection());
-//
-//        for(ScrumMethodClass b:scrumBugs){
-//            // Get PBI name from database
-//            String pbiName = "N/A";
-//            try {
-//                if (b.getPbiId() != null) {
-//                    Connection conn = db.getConnection();
-//                    String sql = "SELECT name FROM product_backlog_items WHERE id = ?";
-//                    java.sql.PreparedStatement pstmt = conn.prepareStatement(sql);
-//                    pstmt.setLong(1, b.getPbiId());
-//                    java.sql.ResultSet rs = pstmt.executeQuery();
-//                    if (rs.next()) {
-//                        pbiName = rs.getString("name");
-//                    }
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//            model.addRow(new Object[]{
-//                    b.getBugId(),
-//                    pbiName,  // PBI Title
-//                    "",  // Phase is empty for Scrum
-//                    b.getTitle(),  // Bug Title
-//                    b.getSeverity(),
-//                    b.getStatus(),
-//                    b.getCreatedAt(),
-//                    b.getUpdatedAt(),
-//                    b.isFastTrack(),
-//                    b.getResolvedAt()
-//            });
-//        }
-//
-//        for(Waterfall b:waterfallBugs){
-//            model.addRow(new Object[]{
-//                    b.getBugId(),
-//                    "N/A",  // No PBI for Waterfall
-//                    b.getPhase(),  // Phase for Waterfall
-//                    b.getTitle(),  // Bug Title
-//                    b.getSeverity(),
-//                    b.getStatus(),
-//                    b.getCreatedAt(),
-//                    b.getUpdatedAt(),
-//                    b.isFastTrack(),
-//                    b.getResolvedAt()
-//            });
-//        }
-//    }
 
     public static void main(String[] args){
         SwingUtilities.invokeLater(()->new MainUI().setVisible(true));
