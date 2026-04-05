@@ -94,9 +94,7 @@ public class BugTracker {
                          String externalLink,
                          Integer pbiId,
                          String phase) throws SQLException {
-//        if (conn.isClosed()) {
-//            int a = 0;
-//        }
+
 
         String sql = "INSERT INTO bugs (title, description, severity, fast_track, external_link, pbi_id, phase) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?) " +

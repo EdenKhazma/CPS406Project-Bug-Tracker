@@ -54,7 +54,7 @@ public class DatabaseTables {
             CreateConnection();
 
             Statement stmt = conn.createStatement();
-            stmt.execute("CALL start_ui()");
+           // stmt.execute("CALL start_ui()"); //-> uncomment to start UI immediately when running this class, comment out in main class to avoid starting UI twice
 
 
             stmt.execute("CREATE SEQUENCE IF NOT EXISTS Bug_id_seq START 1 INCREMENT BY 1;");
