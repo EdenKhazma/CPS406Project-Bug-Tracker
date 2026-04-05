@@ -98,9 +98,7 @@ public class Waterfall extends BugTracker {
 
             if (rowsUpdated > 0) {
                 // Set resolved_at if status is a resolved state
-                if (status != null && ("RESOLVED".equalsIgnoreCase(status) ||
-                    "CLOSED".equalsIgnoreCase(status) ||
-                    "REJECTED".equalsIgnoreCase(status))) {
+                if (status != null && ("RESOLVED/CLOSED".equalsIgnoreCase(status))) {
 
                     String resolvedSql = "UPDATE bugs SET resolved_at = CURRENT_DATE WHERE Bug_ID = ?";
                     try (PreparedStatement resolvedStmt = conn.prepareStatement(resolvedSql)) {

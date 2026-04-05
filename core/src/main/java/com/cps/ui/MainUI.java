@@ -153,7 +153,7 @@ public class MainUI extends JFrame {
         JCheckBox fast = new JCheckBox();
 
         JComboBox<String> phase = new JComboBox<>(new String[]{
-                "BACKLOG","DESIGN","IMPLEMENTATION","TESTING","DONE"
+                "REQUIREMENTS","DESIGN","IMPLEMENTATION","TESTING","DEPLOYMENT"
         });
 
         panel.add(new JLabel("Type")); panel.add(type);
@@ -326,7 +326,7 @@ public class MainUI extends JFrame {
         fastTrack.setSelected(existingFastTrack);
 
         final JComboBox<String> phase = !isScrum[0] ? new JComboBox<>(new String[]{
-                "BACKLOG","DESIGN","IMPLEMENTATION","TESTING","DONE"
+                "REQUIREMENTS","DESIGN","IMPLEMENTATION","TESTING","DEPLOYMENT"
         }) : null;
         if (phase != null && existingPhase[0] != null) {
             phase.setSelectedItem(existingPhase[0]);

@@ -75,7 +75,7 @@ public class DatabaseTables {
                     "    severity     VARCHAR(20) NOT NULL CHECK (" +
                     "        severity IN ('CRITICAL','MAJOR','MINOR','TRIVIAL')),"+
                     "    status       VARCHAR(20) NOT NULL DEFAULT 'NEW' CHECK (" +
-                    "        status IN ('NEW','PLANNED','IN_PROGRESS','RESOLVED','TESTED','CLOSED','REJECTED'))," +
+                    "        status IN ('NEW','PLANNED','IN PROGRESS','RESOLVED/CLOSED','TESTED','REJECTED'))," +
                     "    fast_track BOOLEAN NOT NULL DEFAULT FALSE,   " +
                     "    created_at DATE NOT NULL DEFAULT CURRENT_DATE,   " +
                     "    updated_at DATE NULL,   " +
