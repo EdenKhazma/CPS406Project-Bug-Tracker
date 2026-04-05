@@ -29,7 +29,7 @@ public class DatabaseTables {
             conn = null; // IMPORTANT
 
             if (e.getMessage().contains("lock")) {
-                System.err.println("⚠️ Database is already in use. Please close other instances and try again.");
+                System.err.println(" Database is already in use. Please close other instances and try again.");
             } else {
                 System.err.println("Database error: " + e.getMessage());
             }
@@ -55,19 +55,12 @@ public class DatabaseTables {
 
             Statement stmt = conn.createStatement();
             stmt.execute("CALL start_ui()");
-//            System.out.println("UI started. Press Enter to exit..."); //if I want to see the DB put a break point here
-//            int i = System.in.read();  // temporary pause so DB stays alive
 
 
-            stmt.execute("CREATE SEQUENCE IF NOT EXISTS user_id_seq START 1 INCREMENT BY 1;");
             stmt.execute("CREATE SEQUENCE IF NOT EXISTS Bug_id_seq START 1 INCREMENT BY 1;");
             stmt.execute("CREATE SEQUENCE IF NOT EXISTS Pbi_id_seq START 1 INCREMENT BY 1;");
 
-             stmt.execute("CREATE TABLE IF NOT EXISTS users(" +
-                    "USER_ID INTEGER PRIMARY KEY DEFAULT nextval('user_id_seq')," +
-                    "USERNAME VARCHAR(10) NOT NULL," +
-                    "FULL_NAME VARCHAR(40)," +
-                    "EMAIL VARCHAR(40)); ");
+
 
             stmt.execute("CREATE TABLE IF NOT EXISTS product_backlog_items (" +
                     "id BIGINT PRIMARY KEY DEFAULT nextval('Pbi_id_seq')," +

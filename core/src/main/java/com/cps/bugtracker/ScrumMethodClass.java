@@ -90,25 +90,6 @@ public class ScrumMethodClass extends BugTracker {
         return bugs;
     }
 
-//    public List<ScrumMethodClass> getScrumBugs(Connection conn) {
-//        List<ScrumMethodClass> bugs = new ArrayList<>();
-//        String sql = "SELECT * FROM bugs WHERE pbi_id IS NOT NULL ORDER BY pbi_id ASC";
-//
-//        try (PreparedStatement pstmt = conn.prepareStatement(sql);
-//             ResultSet rs = pstmt.executeQuery()) {
-//
-//            while (rs.next()) {
-//                ScrumMethodClass scrum = new ScrumMethodClass();     // create a new Scrum object
-//                scrum.mapResultSetToBug(rs);   // fill it using inherited mapper
-//                bugs.add(scrum);
-//            }
-//
-//        } catch (SQLException e) {
-//            System.err.println("Error fetching scrum bugs: " + e.getMessage());
-//        }
-//
-//        return bugs;
-//    }
 
     public List<String> getAllPbiNames(Connection conn) {
         List<String> pbiNames = new ArrayList<>();
@@ -127,6 +108,7 @@ public class ScrumMethodClass extends BugTracker {
 
         return pbiNames;
     }
+
 
     public boolean updateScrumBug(Connection conn, int bugId, Long pbiId, String title, 
                                    String description, String severity, String status, Boolean fastTrack) {
