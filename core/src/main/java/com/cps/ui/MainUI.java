@@ -318,7 +318,7 @@ public class MainUI extends JFrame {
         severity.setSelectedItem(existingSeverity);
 
         JComboBox<String> status = new JComboBox<>(new String[]{
-                "NEW","PLANNED","IN PROGRESS","RESOLVED","TESTED","CLOSED","REJECTED"
+                "NEW","PLANNED","IN PROGRESS","RESOLVED/CLOSED","TESTED","REJECTED"
         });
         status.setSelectedItem(existingStatus);
 
