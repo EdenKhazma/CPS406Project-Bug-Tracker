@@ -108,7 +108,7 @@ The main screen displays all bugs in a single table with the following columns:
  
 ## Database Tables
  
-**`bugs`** — stores all bugs (Scrum and Waterfall)  
-**`product_backlog_items`** — stores PBIs linked to Scrum bugs  
+**`bugs`** - stores all bugs (Scrum and Waterfall)  
+**`product_backlog_items`** - stores PBIs linked to Scrum bugs  
  
 The database file `BugTracker.db` is created automatically in the project directory on first run.
