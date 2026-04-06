@@ -6,10 +6,10 @@ A Java desktop application for tracking and managing software bugs across two de
  
 ## Technologies Used
  
-- **Java Swing** — Desktop GUI
-- **DuckDB** — Embedded local database
-- **JDBC** — Database connectivity
-- **JUnit 5** — Unit testing
+- **Java Swing** - Desktop GUI
+- **DuckDB** - Embedded local database
+- **JDBC** - Database connectivity
+- **JUnit 5** - Unit testing
  
 ---
  
@@ -17,7 +17,7 @@ A Java desktop application for tracking and managing software bugs across two de
  
 1. Make sure you have Java installed.
 2. Add the DuckDB JDBC driver to your project dependencies.
-3. Run `MainUI.java` — the database and tables are created automatically on first launch.
+3. Run `MainUI.java` - the database and tables are created automatically on first launch.
  
 ---
  
@@ -28,7 +28,7 @@ A Java desktop application for tracking and managing software bugs across two de
 **Scrum Bugs**
 - Linked to a Product Backlog Item (PBI)
 - Each bug must belong to an existing or new PBI
-- No phase assigned — progress is tracked via status
+- No phase assigned - progress is tracked via status
  
 **Waterfall Bugs**
 - Not linked to any PBI
@@ -51,14 +51,14 @@ The main screen displays all bugs in a single table with the following columns:
 | Status | Current bug status |
 | Created | Date the bug was created |
 | Updated | Date the bug was last updated |
-| Fast Track | Checkbox — ticked if bug is fast tracked |
+| Fast Track | Checkbox - ticked if bug is fast tracked |
 | Resolved | Date the bug was resolved |
  
 **Color coding by severity:**
-- 🔴 CRITICAL — Red
-- 🟠 MAJOR — Orange
-- 🟡 MINOR — Yellow
-- 🟢 TRIVIAL — Green
+- 🔴 CRITICAL - Red
+- 🟠 MAJOR - Orange
+- 🟡 MINOR - Yellow
+- 🟢 TRIVIAL - Green
  
 **Fast Track bugs always appear at the top of the table.**
  
